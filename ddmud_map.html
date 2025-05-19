@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>Port Vale Map (DD Mud)</title>
+        <style>
+        html {
+            font-family: monospace;
+            font-size: 24px;
+            
+        }
+
+        body {
+            margin: 0 auto;
+            background: #222;
+        }
+        
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .road:hover, .house:hover, .bus:hover, .fun:hover, .gov:hover, .food:hover, .edu:hover, .sho:hover {
+            background: rgb(198, 119, 202);
+            color: black;
+        }
+        
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            background-color: rgb(198, 119, 202);
+            color: #fff;
+            text-align: center;
+            padding: 3px;
+            border-radius: 6px;
+            position: absolute;
+            z-index: 1;
+            width: 400px;
+            bottom: 100%;
+            left: 50%;
+            margin-left: -200px;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+        }
+
+        *::selection {
+            color: inherit;
+            background-color: none;
+        }
+
+        .container {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 640px;
+            -webkit-transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%);
+        }
+        
+        .gridcontainer {
+            width: 640px;
+        }
+
+        h1 {
+            margin: 0;
+            margin-bottom: 10px;
+            color: white;
+            width: 100%;
+            text-align: center;
+        }
+
+        .grid {
+            background: white;
+            grid-template-columns: repeat(20, 1fr);
+            display: grid;
+            width: auto;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        .grid > div {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            margin: 0;
+            padding: 0;
+        }
+
+        .grid * {
+            text-shadow: 1px 1px 3px black;
+        }
+        
+        .house, .shop, .edu, .gov, .fun, .food {
+            cursor: pointer;
+        }
+
+        .grass, .house, .sand, .mountains, .water {
+            image-rendering: pixelated;
+        }
+
+        .grass, .house, .bus {
+            background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAxQTFRFcMCgoNDAQLCAGKBoOmvosAAAAD9JREFUeJxjZAACRgaBggmMDAw8X4AEQwOjwwGHA4wsf1h0GCGyHD84IKyGCR8EGHm+gMQaGhig6nSu/EGoAwA93g/xQIeORwAAAABJRU5ErkJggg==);
+        }
+
+        .sand {
+            background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAlQTFRF2MiA0LBo6OCg3tumWgAAAD1JREFUeJxjZAACRgYGlj9AQukdiOUAJBgUQCwbEIuREaoESLD8ARJK7z4AWQ57gGIKD4AsmwNAFuN/iBIAR1oJxjVtRisAAAAASUVORK5CYII=);
+        }
+
+        .mountains {
+            background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAgMAAABinRfyAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAlQTFRFoIhwyKh4gGhoF2720AAAAFJJREFUeJxjZGAI2cbI+sf/BqPIR+sDjAEbGBgYGTRuAIkFGT8YmeoagCwGhgAgwejIqPDl429GBqAaRkb7Bw8YWX8zaDA2NNonMDJwmR0AawMAcnUVnUT46SgAAAAASUVORK5CYII=);
+        }
+
+        .water {
+            background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAZQTFRFUGjQaIDQ3WvkKgAAACxJREFUeJxjZPzPyNAARg5gpMDIIMHIwMbIwMjY0ABCDgdASOEBo8QLRrZfALnzCdAUTEnIAAAAAElFTkSuQmCC);
+        }
+
+        .road {
+            background: dimgrey;
+            color: yellow;
+            cursor: crosshair;
+            text-shadow: none;
+        }
+
+        .shop {
+            background: rgb(0, 219, 127);
+        }
+
+        .edu {
+            background: rgb(204, 187, 0);
+        }
+
+        .gov {
+            background: rgb(0, 78, 138);
+        }
+
+        .fun {
+            background: rgb(188, 0, 188);
+        }
+
+        .food {
+            background: rgb(185, 0, 0);
+        }
+        </style>
+    </head>
+
+    <body>
+        <div class="container">
+            <h1>Port Vale Map (DDMud)</h1>
+            <div class="gridcontainer">
+                <div class="grid">
+                <!--1-->
+                <div id="a1" class="sand tooltip"></div>
+                <div id="b1" class="road tooltip">-<span class="tooltiptext">Mountain Trail Road</span></div>
+                <div id="c1" class="road tooltip">-<span class="tooltiptext">Mountain Trail Road</span></div>
+                <div id="d1" class="road tooltip">-<span class="tooltiptext">Mountain Trail Road</span></div>
+                <div id="e1" class="road tooltip">-<span class="tooltiptext">Mountain Trail Road</span></div>
+                <div id="f1" class="mountains tooltip"></div>
+                <div id="g1" class="mountains tooltip"></div>
+                <div id="h1" class="mountains tooltip"></div>
+                <div id="i1" class="mountains tooltip"></div>
+                <div id="j1" class="water tooltip"></div>
+                <div id="k1" class="water tooltip"></div>
+                <div id="l1" class="water tooltip"></div>
+                <div id="m1" class="water tooltip"></div>
+                <div id="n1" class="mountains tooltip"></div>
+                <div id="o1" class="mountains tooltip"></div>
+                <div id="p1" class="mountains tooltip"></div>
+                <div id="q1" class="fun tooltip">🏕️<span class="tooltiptext">Snowy Peaks Ski Resort</span></div>
+                <div id="r1" class="mountains tooltip"></div>
+                <div id="s1" class="mountains tooltip"></div>
+                <div id="t1" class="fun tooltip">🚠<span class="tooltiptext">Camping Grounds</span></div>
+                <!--2-->
+                <div id="a2" class="grass tooltip"></div>
+                <div id="b2" class="road tooltip">|<span class="tooltiptext">Ocean Ridge Way</span></div>
+                <div id="c2" class="grass tooltip"></div>
+                <div id="d2" class="grass tooltip"></div>
+                <div id="e2" class="fun tooltip">🎥<span class="tooltiptext">Hollywood East Movie Theatre</span></div>
+                <div id="f2" class="road tooltip">\<span class="tooltiptext">Mountain Trail Road</span></div>
+                <div id="g2" class="mountains tooltip"></div>
+                <div id="h2" class="mountains tooltip"></div>
+                <div id="i2" class="food tooltip">🥩<span class="tooltiptext">High Point Steakhouse</span></div>
+                <div id="j2" class="mountains tooltip"></div>
+                <div id="k2" class="water tooltip"></div>
+                <div id="l2" class="water tooltip"></div>
+                <div id="m2" class="fun tooltip">🎣<span class="tooltiptext">Lake Vale</span></div>
+                <div id="n2" class="mountains tooltip"></div>
+                <div id="o2" class="mountains tooltip"></div>
+                <div id="p2" class="road tooltip">/<span class="tooltiptext">Mountain Trail Road</span></div>
+                <div id="q2" class="mountains tooltip"></div>
+                <div id="r2" class="mountains tooltip"></div>
+                <div id="s2" class="road tooltip">/<span class="tooltiptext">Mountain Trail Road</span></div>
+                <div id="t2" class="mountains tooltip"></div>
+                <!--3-->
+                <div id="a3" class="grass tooltip"></div>
+                <div id="b3" class="road tooltip">|<span class="tooltiptext">Ocean Ridge Way</span></div>
+                <div id="c3" class="grass tooltip"></div>
+                <div id="d3" class="grass tooltip"></div>
+                <div id="e3" class="grass tooltip"></div>
+                <div id="f3" class="grass tooltip"></div>
+                <div id="g3" class="road tooltip">|<span class="tooltiptext">Mountain Trail Road</span></div>
+                <div id="h3" class="road tooltip">-<span class="tooltiptext">Mountain Trail Road</span></div>
+                <div id="i3" class="road tooltip">-<span class="tooltiptext">Mountain Trail Road</span></div>
+                <div id="j3" class="road tooltip">-<span class="tooltiptext">Mountain Trail Road</span></div>
+                <div id="k3" class="road tooltip">-<span class="tooltiptext">Mountain Trail Road</span></div>
+                <div id="l3" class="road tooltip">-<span class="tooltiptext">Mountain Trail Road</span></div>
+                <div id="m3" class="road tooltip">-<span class="tooltiptext">Mountain Trail Road</span></div>
+                <div id="n3" class="road tooltip">-<span class="tooltiptext">Mountain Trail Road</span></div>
+                <div id="o3" class="road tooltip">-<span class="tooltiptext">Mountain Trail Road</span></div>
+                <div id="p3" class="road tooltip">-<span class="tooltiptext">Mountain Trail Road</span></div>
+                <div id="q3" class="road tooltip">-<span class="tooltiptext">Mountain Trail Road</span></div>
+                <div id="r3" class="road tooltip">-<span class="tooltiptext">Mountain Trail Road</span></div>
+                <div id="s3" class="grass tooltip"></div>
+                <div id="t3" class="grass tooltip"></div>
+                <!--4-->
+                <div id="a4" class="sand tooltip"></div>
+                <div id="b4" class="road tooltip">|<span class="tooltiptext">Ocean Ridge Way</span></div>
+                <div id="c4" class="grass tooltip"></div>
+                <div id="d4" class="grass tooltip"></div>
+                <div id="e4" class="grass tooltip"></div>
+                <div id="f4" class="food tooltip">🍦<span class="tooltiptext">Just Desserts Ice Cream Shoppe</span></div>
+                <div id="g4" class="road tooltip">|<span class="tooltiptext">North Main Street</span></div>
+                <div id="h4" class="grass tooltip"></div>
+                <div id="i4" class="grass tooltip"></div>
+                <div id="j4" class="water tooltip"></div>
+                <div id="k4" class="fun tooltip">🌲<span class="tooltiptext">Riverside Park</span></div>
+                <div id="l4" class="fun tooltip">🛝<span class="tooltiptext">Riverside Park - Children's Center</span></div>
+                <div id="m4" class="grass tooltip"></div>
+                <div id="n4" class="road tooltip">|<span class="tooltiptext">Glenview Road</span></div>
+                <div id="o4" class="food tooltip">🍖<span class="tooltiptext">The Meat Pit</span></div>
+                <div id="p4" class="grass tooltip"></div>
+                <div id="q4" class="grass tooltip"></div>
+                <div id="r4" class="mountains tooltip"></div>
+                <div id="s4" class="mountains tooltip"></div>
+                <div id="t4" class="mountains tooltip"></div>
+                <!--5-->
+                <div id="a5" class="fun tooltip">🏖️<span class="tooltiptext">West Ridge Beach</span></div>
+                <div id="b5" class="road tooltip">|<span class="tooltiptext">Ocean Ridge Way</span></div>
+                <div id="c5" class="grass tooltip"></div>
+                <div id="d5" class="grass tooltip"></div>
+                <div id="e5" class="grass tooltip"></div>
+                <div id="f5" class="food tooltip">🥞<span class="tooltiptext">North Main Pancake House</span></div>
+                <div id="g5" class="road tooltip">|<span class="tooltiptext">North Main Street</span></div>
+                <div id="h5" class="grass tooltip"></div>
+                <div id="i5" class="grass tooltip"></div>
+                <div id="j5" class="water tooltip"></div>
+                <div id="k5" class="grass tooltip"></div>
+                <div id="l5" class="grass tooltip"></div>
+                <div id="m5" class="grass tooltip"></div>
+                <div id="n5" class="road tooltip">|<span class="tooltiptext">Glenview Road</span></div>
+                <div id="o5" class="grass tooltip"></div>
+                <div id="p5" class="grass tooltip"></div>
+                <div id="q5" class="grass tooltip"></div>
+                <div id="r5" class="mountains tooltip"></div>
+                <div id="s5" class="mountains tooltip"></div>
+                <div id="t5" class="mountains tooltip"></div>
+                <!--6-->
+                <div id="a6" class="sand tooltip"></div>
+                <div id="b6" class="road tooltip">|<span class="tooltiptext">Ocean Ridge Way</span></div>
+                <div id="c6" class="grass tooltip"></div>
+                <div id="d6" class="grass tooltip"></div>
+                <div id="e6" class="grass tooltip"></div>
+                <div id="f6" class="food tooltip">🥐<span class="tooltiptext">Swedough's Bakery</span></div>
+                <div id="g6" class="road tooltip">|<span class="tooltiptext">North Main Street</span></div>
+                <div id="h6" class="shop tooltip">⛲<span class="tooltiptext">Riverfront Plaza</span></div>
+                <div id="i6" class="water tooltip"></div>
+                <div id="j6" class="grass tooltip"></div>
+                <div id="k6" class="grass tooltip"></div>
+                <div id="l6" class="grass tooltip"></div>
+                <div id="m6" class="gov tooltip">🧑‍⚖️<span class="tooltiptext">Port Vale Courthouse</span></div>
+                <div id="n6" class="road tooltip">|<span class="tooltiptext">Glenview Road</span></div>
+                <div id="o6" class="grass tooltip"></div>
+                <div id="p6" class="grass tooltip"></div>
+                <div id="q6" class="mountains tooltip"></div>
+                <div id="r6" class="mountains tooltip"></div>
+                <div id="s6" class="mountains tooltip"></div>
+                <div id="t6" class="mountains tooltip"></div>
+                <!--7-->
+                <div id="a7" class="sand tooltip"></div>
+                <div id="b7" class="road tooltip">|<span class="tooltiptext">Ocean Ridge Way</span></div>
+                <div id="c7" class="grass tooltip"></div>
+                <div id="d7" class="grass tooltip"></div>
+                <div id="e7" class="grass tooltip"></div>
+                <div id="f7" class="water tooltip"></div>
+                <div id="g7" class="road tooltip">|<span class="tooltiptext">North Main Street</span></div>
+                <div id="h7" class="water tooltip"></div>
+                <div id="i7" class="grass tooltip"></div>
+                <div id="j7" class="grass tooltip"></div>
+                <div id="k7" class="grass tooltip"></div>
+                <div id="l7" class="grass tooltip"></div>
+                <div id="m7" class="grass tooltip"></div>
+                <div id="n7" class="road tooltip">|<span class="tooltiptext">Glenview Road</span></div>
+                <div id="o7" class="grass tooltip"></div>
+                <div id="p7" class="grass tooltip"></div>
+                <div id="q7" class="grass tooltip"></div>
+                <div id="r7" class="mountains tooltip"></div>
+                <div id="s7" class="mountains tooltip"></div>
+                <div id="t7" class="mountains tooltip"></div>
+                <!--8-->
+                <div id="a8" class="mountains tooltip"></div>
+                <div id="b8" class="road tooltip">|<span class="tooltiptext">Ocean Ridge Way</span></div>
+                <div id="c8" class="food tooltip">🦞<span class="tooltiptext">Captain Bob's Seafood Grill</span></div>
+                <div id="d8" class="water tooltip"></div>
+                <div id="e8" class="water tooltip"></div>
+                <div id="f8" class="edu tooltip">🖍️<span class="tooltiptext">Riverbend Activity Center</span></div>
+                <div id="g8" class="road tooltip">|<span class="tooltiptext">North Main Street</span></div>
+                <div id="h8" class="grass tooltip"></div>
+                <div id="i8" class="grass tooltip"></div>
+                <div id="j8" class="grass tooltip"></div>
+                <div id="k8" class="grass tooltip"></div>
+                <div id="l8" class="grass tooltip"></div>
+                <div id="m8" class="edu tooltip">🎓<span class="tooltiptext">Port Vale University</span></div>
+                <div id="n8" class="road tooltip">|<span class="tooltiptext">Glenview Road</span></div>
+                <div id="o8" class="grass tooltip"></div>
+                <div id="p8" class="grass tooltip"></div>
+                <div id="q8" class="mountains tooltip"></div>
+                <div id="r8" class="mountains tooltip"></div>
+                <div id="s8" class="mountains tooltip"></div>
+                <div id="t8" class="mountains tooltip"></div>
+                <!--9-->
+                <div id="a9" class="mountains tooltip"></div>
+                <div id="b9" class="road tooltip">\<span class="tooltiptext">Ocean Ridge Way</span></div>
+                <div id="c9" class="road tooltip">-<span class="tooltiptext">Spring Road</span></div>
+                <div id="d9" class="road tooltip">-<span class="tooltiptext">Spring Road</span></div>
+                <div id="e9" class="road tooltip">-<span class="tooltiptext">Spring Road</span></div>
+                <div id="f9" class="road tooltip">-<span class="tooltiptext">Spring Road</span></div>
+                <div id="g9" class="road tooltip">+<span class="tooltiptext">Intersection of Main and Spring</span></div>
+                <div id="h9" class="road tooltip">-<span class="tooltiptext">Spring Road</span></div>
+                <div id="i9" class="road tooltip">-<span class="tooltiptext">Spring Road</span></div>
+                <div id="j9" class="road tooltip">-<span class="tooltiptext">Spring Road</span></div>
+                <div id="k9" class="road tooltip">-<span class="tooltiptext">Spring Road</span></div>
+                <div id="l9" class="road tooltip">-<span class="tooltiptext">Spring Road</span></div>
+                <div id="m9" class="road tooltip">-<span class="tooltiptext">Spring Road</span></div>
+                <div id="n9" class="road tooltip">+<span class="tooltiptext">Intersection of Glenview and Spring</span></div>
+                <div id="o9" class="grass tooltip"></div>
+                <div id="p9" class="grass tooltip"></div>
+                <div id="q9" class="grass tooltip"></div>
+                <div id="r9" class="grass tooltip"></div>
+                <div id="s9" class="mountains tooltip"></div>
+                <div id="t9" class="mountains tooltip"></div>
+                <!--10-->
+                <div id="a10" class="water tooltip"></div>
+                <div id="b10" class="water tooltip"></div>
+                <div id="c10" class="road tooltip">|<span class="tooltiptext">Ocean Ridge Way</span></div>
+                <div id="d10" class="grass tooltip"></div>
+                <div id="e10" class="grass tooltip"></div>
+                <div id="f10" class="grass tooltip"></div>
+                <div id="g10" class="road tooltip">|<span class="tooltiptext">South Main Street</span></div>
+                <div id="h10" class="grass tooltip"></div>
+                <div id="i10" class="grass tooltip"></div>
+                <div id="j10" class="grass tooltip"></div>
+                <div id="k10" class="gov tooltip">🏥<span class="tooltiptext">Port Vale Hospital</span></div>
+                <div id="l10" class="grass tooltip"></div>
+                <div id="m10" class="shop tooltip">🤱<span class="tooltiptext">Little Emporium</span></div>
+                <div id="n10" class="road tooltip">|<span class="tooltiptext">Glenview Road</span></div>
+                <div id="o10" class="grass tooltip"></div>
+                <div id="p10" class="grass tooltip"></div>
+                <div id="q10" class="mountains tooltip"></div>
+                <div id="r10" class="mountains tooltip"></div>
+                <div id="s10" class="mountains tooltip"></div>
+                <div id="t10" class="mountains tooltip"></div>
+                <!--11-->
+                <div id="a11" class="grass tooltip"></div>
+                <div id="b11" class="grass tooltip"></div>
+                <div id="c11" class="road tooltip">|<span class="tooltiptext">Ocean Ridge Way</span></div>
+                <div id="d11" class="food tooltip">🍝<span class="tooltiptext">Viva Roma</span></div>
+                <div id="e11" class="grass tooltip"></div>
+                <div id="f11" class="grass tooltip"></div>
+                <div id="g11" class="road tooltip">|<span class="tooltiptext">South Main Street</span></div>
+                <div id="h11" class="grass tooltip"></div>
+                <div id="i11" class="grass tooltip"></div>
+                <div id="j11" class="grass tooltip"></div>
+                <div id="k11" class="grass tooltip"></div>
+                <div id="l11" class="grass tooltip"></div>
+                <div id="m11" class="grass tooltip"></div>
+                <div id="n11" class="road tooltip">|<span class="tooltiptext">Glenview Road</span></div>
+                <div id="o11" class="grass tooltip"></div>
+                <div id="p11" class="mountains tooltip"></div>
+                <div id="q11" class="mountains tooltip"></div>
+                <div id="r11" class="mountains tooltip"></div>
+                <div id="s11" class="mountains tooltip"></div>
+                <div id="t11" class="mountains tooltip"></div>
+                <!--12-->
+                <div id="a12" class="mountains tooltip"></div>
+                <div id="b12" class="grass tooltip"></div>
+                <div id="c12" class="road tooltip">|<span class="tooltiptext">Ocean Ridge Way</span></div>
+                <div id="d12" class="grass tooltip"></div>
+                <div id="e12" class="grass tooltip"></div>
+                <div id="f12" class="edu tooltip">🛝<span class="tooltiptext">Palm Crest Etiquette School - Playground</span></div>
+                <div id="g12" class="road tooltip">|<span class="tooltiptext">South Main Street</span></div>
+                <div id="h12" class="grass tooltip"></div>
+                <div id="i12" class="grass tooltip"></div>
+                <div id="j12" class="grass tooltip"></div>
+                <div id="k12" class="grass tooltip"></div>
+                <div id="l12" class="grass tooltip"></div>
+                <div id="m12" class="grass tooltip"></div>
+                <div id="n12" class="road tooltip">|<span class="tooltiptext">Glenview Road</span></div>
+                <div id="o12" class="grass tooltip"></div>
+                <div id="p12" class="water tooltip"></div>
+                <div id="q12" class="water tooltip"></div>
+                <div id="r12" class="mountains tooltip"></div>
+                <div id="s12" class="mountains tooltip"></div>
+                <div id="t12" class="mountains tooltip"></div>
+                <!--13-->
+                <div id="a13" class="mountains tooltip"></div>
+                <div id="b13" class="grass tooltip"></div>
+                <div id="c13" class="road tooltip">|<span class="tooltiptext">Ocean Ridge Way</span></div>
+                <div id="d13" class="grass tooltip"></div>
+                <div id="e13" class="grass tooltip"></div>
+                <div id="f13" class="edu tooltip">🏫<span class="tooltiptext">Palm Crest Etiquette School</span></div>
+                <div id="g13" class="road tooltip">|<span class="tooltiptext">South Main Street</span></div>
+                <div id="h13" class="edu tooltip">🐐<span class="tooltiptext">Misty River Daycare</span></div>
+                <div id="i13" class="grass tooltip"></div>
+                <div id="j13" class="gov tooltip">🏤<span class="tooltiptext">Port Vale Cultural Center</span></div>
+                <div id="k13" class="gov tooltip">🚪<span class="tooltiptext">Entrance to the Portal Building</span></div>
+                <div id="l13" class="grass tooltip"></div>
+                <div id="m13" class="shop tooltip">🏬<span class="tooltiptext">Shop Smart Supermarket</span></div>
+                <div id="n13" class="road tooltip">|<span class="tooltiptext">Glenview Road</span></div>
+                <div id="o13" class="grass tooltip"></div>
+                <div id="p13" class="water tooltip"></div>
+                <div id="q13" class="water tooltip"></div>
+                <div id="r13" class="water tooltip"></div>
+                <div id="s13" class="water tooltip"></div>
+                <div id="t13" class="mountains tooltip"></div>
+                <!--14-->
+                <div id="a14" class="grass tooltip"></div>
+                <div id="b14" class="bus tooltip">🚏<span class="tooltiptext">West Residential Block Bus Stop</span></div>
+                <div id="c14" class="road tooltip">|<span class="tooltiptext">Ocean Ridge Way</span></div>
+                <div id="d14" class="road tooltip">-<span class="tooltiptext">Blackwater Avenue</span></div>
+                <div id="e14" class="road tooltip">-<span class="tooltiptext">Blackwater Avenue</span></div>
+                <div id="f14" class="road tooltip">-<span class="tooltiptext">Blackwater Avenue</span></div>
+                <div id="g14" class="road tooltip">-<span class="tooltiptext">Blackwater Avenue</span></div>
+                <div id="h14" class="road tooltip">-<span class="tooltiptext">Blackwater Avenue</span></div>
+                <div id="i14" class="road tooltip">-<span class="tooltiptext">Blackwater Avenue</span></div>
+                <div id="j14" class="road tooltip">-<span class="tooltiptext">Blackwater Avenue</span></div>
+                <div id="k14" class="road tooltip">-<span class="tooltiptext">Blackwater Avenue</span></div>
+                <div id="l14" class="road tooltip">-<span class="tooltiptext">Blackwater Avenue</span></div>
+                <div id="m14" class="road tooltip">-<span class="tooltiptext">Blackwater Avenue</span></div>
+                <div id="n14" class="road tooltip">-<span class="tooltiptext">Blackwater Avenue</span></div>
+                <div id="o14" class="road tooltip">\<span class="tooltiptext">Blackwater Avenue</span></div>
+                <div id="p14" class="grass tooltip"></div>
+                <div id="q14" class="water tooltip"></div>
+                <div id="r14" class="water tooltip"></div>
+                <div id="s14" class="water tooltip"></div>
+                <div id="t14" class="water tooltip"></div>
+                <!--15-->
+                <div id="a15" class="grass tooltip"></div>
+                <div id="b15" class="house tooltip">🏠<span class="tooltiptext">14806 Ocean Ridge Way</span></div>
+                <div id="c15" class="road tooltip">|<span class="tooltiptext">Ocean Ridge Way</span></div>
+                <div id="d15" class="grass tooltip"></div>
+                <div id="e15" class="grass tooltip"></div>
+                <div id="f15" class="grass tooltip"></div>
+                <div id="g15" class="shop tooltip">🏪<span class="tooltiptext">Quickly In Convenience Store</span></div>
+                <div id="h15" class="grass tooltip"></div>
+                <div id="i15" class="grass tooltip"></div>
+                <div id="j15" class="road tooltip">|<span class="tooltiptext">Blue Ridge Road</span></div>
+                <div id="k15" class="bus tooltip">🚏<span class="tooltiptext">East Residential Block Bus Stop</span></div>
+                <div id="l15" class="grass tooltip"></div>
+                <div id="m15" class="grass tooltip"></div>
+                <div id="n15" class="grass tooltip"></div>
+                <div id="o15" class="grass tooltip"></div>
+                <div id="p15" class="road tooltip">\<span class="tooltiptext">Old Trail Road</span></div>
+                <div id="q15" class="water tooltip"></div>
+                <div id="r15" class="water tooltip"></div>
+                <div id="s15" class="water tooltip"></div>
+                <div id="t15" class="water tooltip"></div>
+                <!--16-->
+                <div id="a16" class="grass tooltip"></div>
+                <div id="b16" class="house tooltip">🏠<span class="tooltiptext">14656 Ocean Ridge Way</span></div>
+                <div id="c16" class="road tooltip">|<span class="tooltiptext">Ocean Ridge Way</span></div>
+                <div id="d16" class="house tooltip">🏠<span class="tooltiptext">14658 Westwind Court</span></div>
+                <div id="e16" class="house tooltip">🏠<span class="tooltiptext">14659 Westwind Court</span></div>
+                <div id="f16" class="grass tooltip"></div>
+                <div id="g16" class="grass tooltip"></div>
+                <div id="h16" class="grass tooltip"></div>
+                <div id="i16" class="house tooltip">🏠<span class="tooltiptext">14663 Blue Ridge Road</span></div>
+                <div id="j16" class="road tooltip">|<span class="tooltiptext">Blue Ridge Road</span></div>
+                <div id="k16" class="house tooltip">🏠<span class="tooltiptext">14665 Whiterock Circle</span></div>
+                <div id="l16" class="house tooltip">🏠<span class="tooltiptext">14666 Whiterock Circle</span></div>
+                <div id="m16" class="grass tooltip"></div>
+                <div id="n16" class="grass tooltip"></div>
+                <div id="o16" class="grass tooltip"></div>
+                <div id="p16" class="house tooltip">🏠<span class="tooltiptext">14670 Old Trail Road</span></div>
+                <div id="q16" class="road tooltip">\<span class="tooltiptext">Old Trail Road</span></div>
+                <div id="r16" class="water tooltip"></div>
+                <div id="s16" class="grass tooltip"></div>
+                <div id="t16" class="grass tooltip"></div>
+                <!--17-->
+                <div id="a17" class="grass tooltip"></div>
+                <div id="b17" class="house tooltip">🏠<span class="tooltiptext">14506 Ocean Ridge Way</span></div>
+                <div id="c17" class="road tooltip">|<span class="tooltiptext">Ocean Ridge Way</span></div>
+                <div id="d17" class="road tooltip">-<span class="tooltiptext">Westwind Court</span></div>
+                <div id="e17" class="road tooltip">-<span class="tooltiptext">Westwind Court</span></div>
+                <div id="f17" class="house tooltip">🏠<span class="tooltiptext">14510 Westwind Court</span></div>
+                <div id="g17" class="grass tooltip"></div>
+                <div id="h17" class="grass tooltip"></div>
+                <div id="i17" class="house tooltip">🏠<span class="tooltiptext">14513 Blue Ridge Road</span></div>
+                <div id="j17" class="road tooltip">|<span class="tooltiptext">Blue Ridge Road</span></div>
+                <div id="k17" class="road tooltip">-<span class="tooltiptext">Whiterock Circle</span></div>
+                <div id="l17" class="road tooltip">-<span class="tooltiptext">Whiterock Circle</span></div>
+                <div id="m17" class="house tooltip">🏠<span class="tooltiptext">14517 Whiterock Circle</span></div>
+                <div id="n17" class="grass tooltip"></div>
+                <div id="o17" class="grass tooltip"></div>
+                <div id="p17" class="grass tooltip"></div>
+                <div id="q17" class="house tooltip">🏠<span class="tooltiptext">14521 Old Trail Road</span></div>
+                <div id="r17" class="road tooltip">\<span class="tooltiptext">Old Trail Road</span></div>
+                <div id="s17" class="house tooltip">🏠<span class="tooltiptext">14523 Old Trail Road</span></div>
+                <div id="t17" class="grass tooltip"></div>
+                <!--18-->
+                <div id="a18" class="grass tooltip"></div>
+                <div id="b18" class="house tooltip">🏠<span class="tooltiptext">14356 Ocean Ridge Way</span></div>
+                <div id="c18" class="road tooltip">|<span class="tooltiptext">Ocean Ridge Way</span></div>
+                <div id="d18" class="house tooltip">🏠<span class="tooltiptext">14358 Westwind Court</span></div>
+                <div id="e18" class="house tooltip">🏠<span class="tooltiptext">14359 Westwind Court</span></div>
+                <div id="f18" class="grass tooltip"></div>
+                <div id="g18" class="grass tooltip"></div>
+                <div id="h18" class="grass tooltip"></div>
+                <div id="i18" class="house tooltip">🏠<span class="tooltiptext">14363 Blue Ridge Road</span></div>
+                <div id="j18" class="road tooltip">|<span class="tooltiptext">Blue Ridge Road</span></div>
+                <div id="k18" class="house tooltip">🏠<span class="tooltiptext">14365 Whiterock Circle</span></div>
+                <div id="l18" class="house tooltip">🏠<span class="tooltiptext">14366 Whiterock Circle</span></div>
+                <div id="m18" class="grass tooltip"></div>
+                <div id="n18" class="grass tooltip"></div>
+                <div id="o18" class="grass tooltip"></div>
+                <div id="p18" class="grass tooltip"></div>
+                <div id="q18" class="grass tooltip"></div>
+                <div id="r18" class="house tooltip">🏠<span class="tooltiptext">14372 Old Trail Road</span></div>
+                <div id="s18" class="road tooltip">|<span class="tooltiptext">Old Trail Road</span></div>
+                <div id="t18" class="house tooltip">🏠<span class="tooltiptext">14374 Old Trail Road</span></div>
+                <!--19-->
+                <div id="a19" class="grass tooltip"></div>
+                <div id="b19" class="house tooltip">🏠<span class="tooltiptext">14206 Ocean Ridge Way</span></div>
+                <div id="c19" class="road tooltip">|<span class="tooltiptext">Ocean Ridge Way</span></div>
+                <div id="d19" class="house tooltip">🏠<span class="tooltiptext">14208 Ocean Ridge Way</span></div>
+                <div id="e19" class="house tooltip">🏠<span class="tooltiptext">14209 Mistwood Lane</span></div>
+                <div id="f19" class="house tooltip">🏠<span class="tooltiptext">14210 Mistwood Lane</span></div>
+                <div id="g19" class="house tooltip">🏠<span class="tooltiptext">14211 Mistwood Lane</span></div>
+                <div id="h19" class="house tooltip">🏠<span class="tooltiptext">14212 Mistwood Lane</span></div>
+                <div id="i19" class="house tooltip">🏠<span class="tooltiptext">14213 Mistwood Lane</span></div>
+                <div id="j19" class="road tooltip">|<span class="tooltiptext">Blue Ridge Road</span></div>
+                <div id="k19" class="house tooltip">🏠<span class="tooltiptext">14215 Mistwood Lane</span></div>
+                <div id="l19" class="house tooltip">🏠<span class="tooltiptext">14216 Mistwood Lane</span></div>
+                <div id="m19" class="house tooltip">🏠<span class="tooltiptext">14217 Mistwood Lane</span></div>
+                <div id="n19" class="house tooltip">🏠<span class="tooltiptext">14218 Mistwood Lane</span></div>
+                <div id="o19" class="house tooltip">🏠<span class="tooltiptext">14219 Mistwood Lane</span></div>
+                <div id="p19" class="house tooltip">🏠<span class="tooltiptext">14220 Mistwood Lane</span></div>
+                <div id="q19" class="house tooltip">🏠<span class="tooltiptext">14221 Mistwood Lane</span></div>
+                <div id="r19" class="house tooltip">🏠<span class="tooltiptext">14222 Mistwood Lane</span></div>
+                <div id="s19" class="road tooltip">|<span class="tooltiptext">Old Trail Road</span></div>
+                <div id="t19" class="house tooltip">🏠<span class="tooltiptext">14224 Old Trail Road</span></div>
+                <!--20-->
+                <div id="a20" class="grass tooltip"></div>
+                <div id="b20" class="grass tooltip"></div>
+                <div id="c20" class="road tooltip">\<span class="tooltiptext">Ocean Ridge Way</span></div>
+                <div id="d20" class="road tooltip">-<span class="tooltiptext">Mistwood Lane</span></div>
+                <div id="e20" class="road tooltip">-<span class="tooltiptext">Mistwood Lane</span></div>
+                <div id="f20" class="road tooltip">-<span class="tooltiptext">Mistwood Lane</span></div>
+                <div id="g20" class="road tooltip">-<span class="tooltiptext">Mistwood Lane</span></div>
+                <div id="h20" class="road tooltip">-<span class="tooltiptext">Mistwood Lane</span></div>
+                <div id="i20" class="road tooltip">-<span class="tooltiptext">Mistwood Lane</span></div>
+                <div id="j20" class="road tooltip">+<span class="tooltiptext">Intersection of Mistwood and Blue Ridge</span></div>
+                <div id="k20" class="road tooltip">-<span class="tooltiptext">Mistwood Lane</span></div>
+                <div id="l20" class="road tooltip">-<span class="tooltiptext">Mistwood Lane</span></div>
+                <div id="m20" class="road tooltip">-<span class="tooltiptext">Mistwood Lane</span></div>
+                <div id="n20" class="road tooltip">-<span class="tooltiptext">Mistwood Lane</span></div>
+                <div id="o20" class="road tooltip">-<span class="tooltiptext">Mistwood Lane</span></div>
+                <div id="p20" class="road tooltip">-<span class="tooltiptext">Mistwood Lane</span></div>
+                <div id="q20" class="road tooltip">-<span class="tooltiptext">Mistwood Lane</span></div>
+                <div id="r20" class="road tooltip">-<span class="tooltiptext">Mistwood Lane</span></div>
+                <div id="s20" class="road tooltip">|<span class="tooltiptext">Old Trail Road</span></div>
+                <div id="t20" class="grass tooltip"></div>
+                <!--21-->
+                <div id="a21" class="grass tooltip"></div>
+                <div id="b21" class="grass tooltip"></div>
+                <div id="c21" class="house tooltip">🏠<span class="tooltiptext">13907 Driftwood Circle</span></div>
+                <div id="d21" class="road tooltip">|<span class="tooltiptext">Driftwood Circle</span></div>
+                <div id="e21" class="house tooltip">🏠<span class="tooltiptext">13909 Driftwood Circle</span></div>
+                <div id="f21" class="house tooltip">🏠<span class="tooltiptext">13910 Mistwood Lane</span></div>
+                <div id="g21" class="house tooltip">🏠<span class="tooltiptext">13911 Mistwood Lane</span></div>
+                <div id="h21" class="house tooltip">🏠<span class="tooltiptext">13912 Mistwood Lane</span></div>
+                <div id="i21" class="house tooltip">🏠<span class="tooltiptext">13913 Mistwood Lane</span></div>
+                <div id="j21" class="road tooltip">|<span class="tooltiptext">Blue Ridge Road</span></div>
+                <div id="k21" class="bus tooltip">🚏<span class="tooltiptext">South Residential Block Bus Stop</span></div>
+                <div id="l21" class="grass tooltip"></div>
+                <div id="m21" class="house tooltip">🏠<span class="tooltiptext">13917 Mistwood Lane</span></div>
+                <div id="n21" class="house tooltip">🏠<span class="tooltiptext">13918 Green Trails Drive</span></div>
+                <div id="o21" class="road tooltip">|<span class="tooltiptext">Green Trails Drive</span></div>
+                <div id="p21" class="house tooltip">🏠<span class="tooltiptext">13920 Green Trails Drive</span></div>
+                <div id="q21" class="house tooltip">🏠<span class="tooltiptext">13921 Mistwood Lane</span></div>
+                <div id="r21" class="house tooltip">🏠<span class="tooltiptext">13922 Mistwood Lane</span></div>
+                <div id="s21" class="road tooltip">|<span class="tooltiptext">Old Trail Road</span></div>
+                <div id="t21" class="house tooltip">🏠<span class="tooltiptext">13924 Old Trail Road</span></div>
+                <!--22-->
+                <div id="a22" class="grass tooltip"></div>
+                <div id="b22" class="grass tooltip"></div>
+                <div id="c22" class="house tooltip">🏠<span class="tooltiptext">13757 Driftwood Circle</span></div>
+                <div id="d22" class="road tooltip">|<span class="tooltiptext">Driftwood Circle</span></div>
+                <div id="e22" class="house tooltip">🏠<span class="tooltiptext">13759 Driftwood Circle</span></div>
+                <div id="f22" class="grass tooltip"></div>
+                <div id="g22" class="house tooltip">🏠<span class="tooltiptext">13761 Orchard Road</span></div>
+                <div id="h22" class="house tooltip">🏠<span class="tooltiptext">13762 Orchard Road</span></div>
+                <div id="i22" class="house tooltip">🏠<span class="tooltiptext">13763 Orchard Road</span></div>
+                <div id="j22" class="road tooltip">|<span class="tooltiptext">Blue Ridge Road</span></div>
+                <div id="k22" class="fun tooltip">🌲<span class="tooltiptext">Blue Ridge Park</span></div>
+                <div id="l22" class="grass tooltip"></div>
+                <div id="m22" class="house tooltip">🏠<span class="tooltiptext">13767 Orchard Road</span></div>
+                <div id="n22" class="house tooltip">🏠<span class="tooltiptext">13768 Green Trails Drive</span></div>
+                <div id="o22" class="road tooltip">|<span class="tooltiptext">Green Trails Drive</span></div>
+                <div id="p22" class="house tooltip">🏠<span class="tooltiptext">13770 Green Trails Drive</span></div>
+                <div id="q22" class="house tooltip">🏠<span class="tooltiptext">13771 Orchard Road</span></div>
+                <div id="r22" class="house tooltip">🏠<span class="tooltiptext">13772 Orchard Road</span></div>
+                <div id="s22" class="road tooltip">|<span class="tooltiptext">Old Trail Road</span></div>
+                <div id="t22" class="house tooltip">🏠<span class="tooltiptext">13774 Old Trail Road</span></div>
+                <!--23-->
+                <div id="a23" class="grass tooltip"></div>
+                <div id="b23" class="grass tooltip"></div>
+                <div id="c23" class="grass tooltip"></div>
+                <div id="d23" class="house tooltip">🏠<span class="tooltiptext">13608 Driftwood Circle</span></div>
+                <div id="e23" class="grass tooltip"></div>
+                <div id="f23" class="grass tooltip"></div>
+                <div id="g23" class="road tooltip">/<span class="tooltiptext">Orchard Road</span></div>
+                <div id="h23" class="road tooltip">-<span class="tooltiptext">Orchard Road</span></div>
+                <div id="i23" class="road tooltip">-<span class="tooltiptext">Orchard Road</span></div>
+                <div id="j23" class="road tooltip">-<span class="tooltiptext">Orchard Road</span></div>
+                <div id="k23" class="road tooltip">-<span class="tooltiptext">Orchard Road</span></div>
+                <div id="l23" class="road tooltip">-<span class="tooltiptext">Orchard Road</span></div>
+                <div id="m23" class="road tooltip">-<span class="tooltiptext">Orchard Road</span></div>
+                <div id="n23" class="road tooltip">-<span class="tooltiptext">Orchard Road</span></div>
+                <div id="o23" class="road tooltip">+<span class="tooltiptext">Intersection of Green Trails Drive and Orchard Road</span></div>
+                <div id="p23" class="road tooltip">-<span class="tooltiptext">Orchard Road</span></div>
+                <div id="q23" class="road tooltip">-<span class="tooltiptext">Orchard Road</span></div>
+                <div id="r23" class="road tooltip">-<span class="tooltiptext">Orchard Road</span></div>
+                <div id="s23" class="road tooltip">|<span class="tooltiptext">Old Trail Road</span></div>
+                <div id="t23" class="house tooltip">🏠<span class="tooltiptext">13624 Old Trail Road</span></div>
+                <!--24-->
+                <div id="a24" class="mountains tooltip"></div>
+                <div id="b24" class="water tooltip"></div>
+                <div id="c24" class="grass tooltip"></div>
+                <div id="d24" class="grass tooltip"></div>
+                <div id="e24" class="grass tooltip"></div>
+                <div id="f24" class="house tooltip">🏠<span class="tooltiptext">13460 Lakeview Road</span></div>
+                <div id="g24" class="road tooltip">|<span class="tooltiptext">Lakeview Road</span></div>
+                <div id="h24" class="house tooltip">🏠<span class="tooltiptext">13462 Lakeview Road</span></div>
+                <div id="i24" class="house tooltip">🏠<span class="tooltiptext">13463 Lakeview Road</span></div>
+                <div id="j24" class="house tooltip">🏠<span class="tooltiptext">13464 Lakeview Road</span></div>
+                <div id="k24" class="house tooltip">🏠<span class="tooltiptext">13465 Lakeview Road</span></div>
+                <div id="l24" class="house tooltip">🏠<span class="tooltiptext">13466 Lakeview Road</span></div>
+                <div id="m24" class="house tooltip">🏠<span class="tooltiptext">13467 Lakeview Road</span></div>
+                <div id="n24" class="house tooltip">🏠<span class="tooltiptext">13468 Green Trails Drive</span></div>
+                <div id="o24" class="road tooltip">|<span class="tooltiptext">Green Trails Drive</span></div>
+                <div id="p24" class="house tooltip">🏠<span class="tooltiptext">13470 Green Trails Drive</span></div>
+                <div id="q24" class="house tooltip">🏠<span class="tooltiptext">13471 Orchard Road</span></div>
+                <div id="r24" class="house tooltip">🏠<span class="tooltiptext">13472 Orchard Road</span></div>
+                <div id="s24" class="road tooltip">|<span class="tooltiptext">Old Trail Road</span></div>
+                <div id="t24" class="house tooltip">🏠<span class="tooltiptext">13474 Old Trail Road</span></div>
+                <!--25-->
+                <div id="a25" class="mountains tooltip"></div>
+                <div id="b25" class="water tooltip"></div>
+                <div id="c25" class="water tooltip"></div>
+                <div id="d25" class="grass tooltip"></div>
+                <div id="e25" class="grass tooltip"></div>
+                <div id="f25" class="house tooltip">🏠<span class="tooltiptext">13310 Lakeview Road</span></div>
+                <div id="g25" class="road tooltip">|<span class="tooltiptext">Lakeview Road</span></div>
+                <div id="h25" class="house tooltip">🏠<span class="tooltiptext">13312 Lakeview Road</span></div>
+                <div id="i25" class="house tooltip">🏠<span class="tooltiptext">13313 Wildfire Avenue</span></div>
+                <div id="j25" class="house tooltip">🏠<span class="tooltiptext">13314 Wildfire Avenue</span></div>
+                <div id="k25" class="house tooltip">🏠<span class="tooltiptext">13315 Wildfire Avenue</span></div>
+                <div id="l25" class="house tooltip">🏠<span class="tooltiptext">13316 Wildfire Avenue</span></div>
+                <div id="m25" class="house tooltip">🏠<span class="tooltiptext">13317 Green Trails Drive</span></div>
+                <div id="n25" class="road tooltip">/<span class="tooltiptext">Green Trails Drive</span></div>
+                <div id="o25" class="house tooltip">🏠<span class="tooltiptext">13319 Green Trails Drive</span></div>
+                <div id="p25" class="grass tooltip"></div>
+                <div id="q25" class="grass tooltip"></div>
+                <div id="r25" class="house tooltip">🏠<span class="tooltiptext">13322 Old Trail Road</span></div>
+                <div id="s25" class="road tooltip">|<span class="tooltiptext">Old Trail Road</span></div>
+                <div id="t25" class="house tooltip">🏠<span class="tooltiptext">13324 Old Trail Road</span></div>
+                <!--26-->
+                <div id="a26" class="mountains tooltip"></div>
+                <div id="b26" class="mountains tooltip"></div>
+                <div id="c26" class="water tooltip"></div>
+                <div id="d26" class="water tooltip"></div>
+                <div id="e26" class="grass tooltip"></div>
+                <div id="f26" class="grass tooltip"></div>
+                <div id="g26" class="road tooltip">|<span class="tooltiptext">Intersection of Lakeview and Wildfire</span></div>
+                <div id="h26" class="road tooltip">-<span class="tooltiptext">Wildfire Avenue</span></div>
+                <div id="i26" class="road tooltip">-<span class="tooltiptext">Wildfire Avenue</span></div>
+                <div id="j26" class="road tooltip">-<span class="tooltiptext">Wildfire Avenue</span></div>
+                <div id="k26" class="road tooltip">-<span class="tooltiptext">Wildfire Avenue</span></div>
+                <div id="l26" class="road tooltip">-<span class="tooltiptext">Wildfire Avenue</span></div>
+                <div id="m26" class="road tooltip">/<span class="tooltiptext">Green Trails Drive</span></div>
+                <div id="n26" class="house tooltip">🏠<span class="tooltiptext">13168 Green Trails Drive</span></div>
+                <div id="o26" class="grass tooltip"></div>
+                <div id="p26" class="grass tooltip"></div>
+                <div id="q26" class="grass tooltip"></div>
+                <div id="r26" class="house tooltip">🏠<span class="tooltiptext">13172 Old Trail Road</span></div>
+                <div id="s26" class="road tooltip">|<span class="tooltiptext">Old Trail Road</span></div>
+                <div id="t26" class="house tooltip">🏠<span class="tooltiptext">13174 Old Trail Road</span></div>
+                <!--27-->
+                <div id="a27" class="mountains tooltip"></div>
+                <div id="b27" class="mountains tooltip"></div>
+                <div id="c27" class="mountains tooltip"></div>
+                <div id="d27" class="grass tooltip"></div>
+                <div id="e27" class="house tooltip">🏠<span class="tooltiptext">3009 Lakeview Road</span></div>
+                <div id="f27" class="road tooltip">/<span class="tooltiptext">Lakeview Road</span></div>
+                <div id="g27" class="grass tooltip"></div>
+                <div id="h27" class="house tooltip">🏠<span class="tooltiptext">13012 Wildfire Avenue</span></div>
+                <div id="i27" class="house tooltip">🏠<span class="tooltiptext">13013 Wildfire Avenue</span></div>
+                <div id="j27" class="house tooltip">🏠<span class="tooltiptext">13014 Wildfire Avenue</span></div>
+                <div id="k27" class="house tooltip">🏠<span class="tooltiptext">13015 Wildfire Avenue</span></div>
+                <div id="l27" class="house tooltip">🏠<span class="tooltiptext">13016 Wildfire Avenue</span></div>
+                <div id="m27" class="road tooltip">|<span class="tooltiptext">Green Trails Drive</span></div>
+                <div id="n27" class="house tooltip">🏠<span class="tooltiptext">13018 Green Trails Drive</span></div>
+                <div id="o27" class="grass tooltip"></div>
+                <div id="p27" class="grass tooltip"></div>
+                <div id="q27" class="house tooltip">🏠<span class="tooltiptext">13021 Old Trail Road</span></div>
+                <div id="r27" class="road tooltip">/<span class="tooltiptext">Old Trail Road</span></div>
+                <div id="s27" class="house tooltip">🏠<span class="tooltiptext">13023 Old Trail Road</span></div>
+                <div id="t27" class="grass tooltip"></div>
+                <!--28-->
+                <div id="a28" class="mountains tooltip"></div>
+                <div id="b28" class="mountains tooltip"></div>
+                <div id="c28" class="grass tooltip"></div>
+                <div id="d28" class="house tooltip">🏠<span class="tooltiptext">3017 Lakeview Road</span></div>
+                <div id="e28" class="road tooltip">/<span class="tooltiptext">Lakeview Road</span></div>
+                <div id="f28" class="house tooltip">🏠<span class="tooltiptext">3024 Lakeview Road</span></div>
+                <div id="g28" class="grass tooltip"></div>
+                <div id="h28" class="grass tooltip"></div>
+                <div id="i28" class="grass tooltip"></div>
+                <div id="j28" class="grass tooltip"></div>
+                <div id="k28" class="grass tooltip"></div>
+                <div id="l28" class="house tooltip">🏠<span class="tooltiptext">12866 Green Trails Drive</span></div>
+                <div id="m28" class="road tooltip">|<span class="tooltiptext">Green Trails Drive</span></div>
+                <div id="n28" class="house tooltip">🏠<span class="tooltiptext">12868 Green Trails Drive</span></div>
+                <div id="o28" class="grass tooltip"></div>
+                <div id="p28" class="house tooltip">🏠<span class="tooltiptext">12870 Old Trail Road</span></div>
+                <div id="q28" class="road tooltip">/<span class="tooltiptext">Old Trail Road</span></div>
+                <div id="r28" class="house tooltip">🏠<span class="tooltiptext">12872 Old Trail Road</span></div>
+                <div id="s28" class="grass tooltip"></div>
+                <div id="t28" class="grass tooltip"></div>
+                <!--29-->
+                <div id="a29" class="mountains tooltip"></div>
+                <div id="b29" class="grass tooltip"></div>
+                <div id="c29" class="house tooltip">🏠<span class="tooltiptext">3105 Lakeview Road</span></div>
+                <div id="d29" class="road tooltip">/<span class="tooltiptext">Lakeview Road</span></div>
+                <div id="e29" class="house tooltip">🏠<span class="tooltiptext">3062 Lakeview Road</span></div>
+                <div id="f29" class="grass tooltip"></div>
+                <div id="g29" class="grass tooltip"></div>
+                <div id="h29" class="grass tooltip"></div>
+                <div id="i29" class="water tooltip"></div>
+                <div id="j29" class="water tooltip"></div>
+                <div id="k29" class="grass tooltip"></div>
+                <div id="l29" class="grass tooltip"></div>
+                <div id="m29" class="house tooltip">🏠<span class="tooltiptext">12717 Green Trails Drive</span></div>
+                <div id="n29" class="grass tooltip"></div>
+                <div id="o29" class="grass tooltip"></div>
+                <div id="p29" class="grass tooltip"></div>
+                <div id="q29" class="grass tooltip"></div>
+                <div id="r29" class="grass tooltip"></div>
+                <div id="s29" class="grass tooltip"></div>
+                <div id="t29" class="grass tooltip"></div>
+                <!--30-->
+                <div id="a30" class="mountains tooltip"></div>
+                <div id="b30" class="house tooltip">🏠<span class="tooltiptext">3327 Lakeview Road</span></div>
+                <div id="c30" class="road tooltip">/<span class="tooltiptext">Lakeview Road</span></div>
+                <div id="d30" class="house tooltip">🏠<span class="tooltiptext">3380 Lakeview Road</span></div>
+                <div id="e30" class="grass tooltip"></div>
+                <div id="f30" class="grass tooltip"></div>
+                <div id="g30" class="grass tooltip"></div>
+                <div id="h30" class="water tooltip"></div>
+                <div id="i30" class="water tooltip"></div>
+                <div id="j30" class="water tooltip"></div>
+                <div id="k30" class="water tooltip"></div>
+                <div id="l30" class="grass tooltip"></div>
+                <div id="m30" class="grass tooltip"></div>
+                <div id="n30" class="grass tooltip"></div>
+                <div id="o30" class="grass tooltip"></div>
+                <div id="p30" class="grass tooltip"></div>
+                <div id="q30" class="grass tooltip"></div>
+                <div id="r30" class="grass tooltip"></div>
+                <div id="s30" class="grass tooltip"></div>
+                <div id="t30" class="grass tooltip"></div>
+                <!--31-->
+                <div id="a31" class="mountains tooltip"></div>
+                <div id="b31" class="house tooltip">🏠<span class="tooltiptext">3421 Lakeview Road</span></div>
+                <div id="c31" class="road tooltip">|<span class="tooltiptext">Lakeview Road</span></div>
+                <div id="d31" class="house tooltip">🏠<span class="tooltiptext">3424 Lakeview Road</span></div>
+                <div id="e31" class="grass tooltip"></div>
+                <div id="f31" class="grass tooltip"></div>
+                <div id="g31" class="water tooltip"></div>
+                <div id="h31" class="water tooltip"></div>
+                <div id="i31" class="water tooltip"></div>
+                <div id="j31" class="water tooltip"></div>
+                <div id="k31" class="grass tooltip"></div>
+                <div id="l31" class="grass tooltip"></div>
+                <div id="m31" class="grass tooltip"></div>
+                <div id="n31" class="grass tooltip"></div>
+                <div id="o31" class="grass tooltip"></div>
+                <div id="p31" class="grass tooltip"></div>
+                <div id="q31" class="grass tooltip"></div>
+                <div id="r31" class="grass tooltip"></div>
+                <div id="s31" class="grass tooltip"></div>
+                <div id="t31" class="grass tooltip"></div>
+                <!--32-->
+                <div id="a32" class="mountains tooltip"></div>
+                <div id="b32" class="grass tooltip"></div>
+                <div id="c32" class="house tooltip">🏠<span class="tooltiptext">3500 Lakeview Road</span></div>
+                <div id="d32" class="grass tooltip"></div>
+                <div id="e32" class="grass tooltip"></div>
+                <div id="f32" class="water tooltip"></div>
+                <div id="g32" class="water tooltip"></div>
+                <div id="h32" class="water tooltip"></div>
+                <div id="i32" class="water tooltip"></div>
+                <div id="j32" class="water tooltip"></div>
+                <div id="k32" class="grass tooltip"></div>
+                <div id="l32" class="grass tooltip"></div>
+                <div id="m32" class="grass tooltip"></div>
+                <div id="n32" class="grass tooltip"></div>
+                <div id="o32" class="grass tooltip"></div>
+                <div id="p32" class="grass tooltip"></div>
+                <div id="q32" class="grass tooltip"></div>
+                <div id="r32" class="grass tooltip"></div>
+                <div id="s32" class="mountains tooltip"></div>
+                <div id="t32" class="mountains tooltip"></div>
+                </div>
+            </div>
+        </div>
+    </body>
+  </html>
